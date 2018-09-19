@@ -1,0 +1,1249 @@
+<!--
+/*
+ * Copyright (c) 2018-present, IBM CORP.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+  
+  Initial Contribution: Alex Nguyen <nguyenal@us.ibm.com>
+-->
+
+<link rel="import" href="../../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/app-layout/app-grid/app-grid-style.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../../bower_components/web-socket/web-socket.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/app-datepicker/app-datepicker.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../../bower_components/polymer/lib/utils/async.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/app-datepicker/app-datepicker-dialog.html">
+
+<dom-module id="maximo-bc-sr-pot-app">
+  <template>
+    <style include="app-grid-style iron-flex iron-flex-alignment">
+      :host {
+        --app-grid-columns: 1;
+        --app-primary-color: #404040;
+        --app-drawer-width: 300px;
+        --paper-spinner-color: orange;
+        display: block;
+      }
+
+      app-header {
+        background-color: #325c80;
+        color: #fff;
+      }
+
+      paper-icon-button {
+        --paper-icon-button-ink-color: white;
+      }
+
+      paper-input[readonly] {
+        pointer-events: none;
+        --paper-input-container-underline: {
+          display: none;
+        }
+      }
+
+      .paper-input-filter{
+        --paper-input-container-input-color: white;
+        --paper-input-container-focus-color: #29B6F6;
+        --paper-input-container-color: #f1f1f1;
+        width: 80%;
+        margin: auto;
+      }
+
+      app-drawer {
+        --app-drawer-content-container: {
+          background-color: var(--app-primary-color);
+          overflow-x: hidden;
+        };
+      }
+      app-drawer-layout:not([narrow]) [drawer-toggle] {
+        display: none;
+      }
+
+      paper-card {
+        width: 100%;
+      }
+
+      .padded {
+        margin-left: 24px;
+        margin-right: 24px;
+        list-style: none;
+      }
+
+      .nav-menu {
+        background-color: var(--app-primary-color);
+        color: #fff;
+      }
+      a {
+        text-decoration: none;
+        color: inherit;
+        font-size: inherit;
+      }
+      .nav-menu > div {
+        display: block;
+        padding: 12px 16px;
+        font-size: 20px;
+        font-weight: 500;
+      }
+      .nav-menu > div.iron-selected {
+        background-color: #888;
+      }
+      .progressBar {
+        --paper-progress-active-color: orange;
+        width: 100%;
+      }
+      /*Needed to align the transaction event to the left*/
+      .justify-start {
+        margin-right: auto
+      }
+
+      /*For centering*/
+      .Aligner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-grow: 1;
+        height: 85vh;
+      }
+
+      .Aligner-item {
+        max-width: 100%;
+      }
+
+      @keyframes slidein {
+        from {
+          margin-left: 100%;
+          width: 300%; 
+        }
+      
+        to {
+          margin-left: 0%;
+          width: 100%;
+        }
+      }
+
+      @keyframes slide-up-fade-in{
+        0% {
+            opacity:0;
+            transform:  translate(0px,40px)  ;
+        }
+        100% {
+            opacity:1;
+            transform:  translate(0px,0px)  ;
+        }
+      }
+
+      .slide-up-fade-in{
+          animation: slide-up-fade-in ease 1s;
+          animation-iteration-count: 1;
+          transform-origin: 50% 50%;
+          animation-fill-mode:forwards; /*when the spec is finished*/
+          -webkit-animation: slide-up-fade-in ease 1s;
+          -webkit-animation-iteration-count: 1;
+          -webkit-transform-origin: 50% 50%;
+          -webkit-animation-fill-mode:forwards; /*Chrome 16+, Safari 4+*/ 
+          -moz-animation: slide-up-fade-in ease 1s;
+          -moz-animation-iteration-count: 1;
+          -moz-transform-origin: 50% 50%;
+          -moz-animation-fill-mode:forwards; /*FF 5+*/
+          -o-animation: slide-up-fade-in ease 1s;
+          -o-animation-iteration-count: 1;
+          -o-transform-origin: 50% 50%;
+          -o-animation-fill-mode:forwards; /*Not implemented yet*/
+          -ms-animation: slide-up-fade-in ease 1s;
+          -ms-animation-iteration-count: 1;
+          -ms-transform-origin: 50% 50%;
+          -ms-animation-fill-mode:forwards; /*IE 10+*/
+
+          opacity:0;
+          opacity: 1\9;
+      }
+
+      #carousel {
+          height: 180px;          
+          display: flex;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+      }
+
+      #carousel .slide {
+          flex: 0 0 auto;
+          margin-right: 5px;           
+      }
+
+      .scale-down {
+        height: 150px;
+        width: 300px;
+        object-fit: scale-down;
+      }
+
+      .scale-dialog {
+        max-width:100%;
+        object-fit: scale-down;
+      }
+
+      .upload-btn-wrapper {
+        position: relative;      
+      }
+
+      .upload-btn-wrapper input[type=file] {
+        font-size: 20px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+      }
+
+      paper-button {
+        color: #325c80;
+      }
+
+      iron-icon.big {
+        --iron-icon-height: 40px;
+        --iron-icon-width: 40px;
+        color: #325c80;
+     }
+    </style>
+    <app-drawer-layout fullbleed>
+        <app-drawer slot="drawer" id="drawer">          
+          <app-header-layout> 
+            <div class="nav-menu" style="text-align: center;">
+              <a href="#" on-tap="_updateAssetList">
+                <h3>{{navTitle}}
+                  <template is="dom-if" if="[[ui.srReloading]]">
+                    <paper-spinner-lite active class="orange"></paper-spinner-lite>
+                  </template>
+                </h3>
+              </a> 
+            </div>            
+            <div>
+              <paper-input label="Search" class="paper-input-filter" value="{{filterValue}}">
+                <iron-icon icon="search" slot="prefix" style="color: white;"></iron-icon>
+              </paper-input>
+            </div>
+                                                                
+          </app-header-layout>
+
+          <iron-selector
+          id="srSelector"
+          class="nav-menu">
+            <template is="dom-repeat" items="[[assetList]]" filter="_filter" id="srMenu">
+              <div on-tap="_handleSRSelected">                
+                  {{_getSideNavItem(item)}}
+                  
+                  <!-- only show inProgress if this particular ticketid is in progress -->
+                  <template is="dom-if" if="[[_isInProgress(ui.*, item)]]">
+                    <paper-spinner-lite active class="orange"></paper-spinner-lite>
+                  </template>
+                  
+                  <!-- only show error if this SR has an error and not in progress-->
+                  <template is="dom-if" if="[[_hasErrorNotInProgress(ui.*, item)]]">
+                    <iron-icon icon="error-outline" style="color: #E53935;"></iron-icon>
+                  </template>
+                  
+                  <br/>
+                  <small>[[item.description]]</small>
+                               
+              </div>
+            </template>
+          </iron-selector>
+          
+        </app-drawer>
+
+        <app-header-layout>            
+          <app-header slot="header" reveals effects="waterfall">
+            <app-toolbar>
+              <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+              <div main-title>{{appTitle}}</div> 
+
+              <div>[[participant.name]]</div>
+              <paper-menu-button horizontal-align="right">
+                  <paper-icon-button icon="account-circle" slot="dropdown-trigger"></paper-icon-button>
+                  <paper-listbox slot="dropdown-content" selected="{{userRoute}}" attr-for-selected="route">
+                      <template is="dom-repeat" items="{{participants}}">
+                          <paper-item route="[[item.route]]">[[item.name]]</paper-item>
+                      </template>
+                  </paper-listbox>
+              </paper-menu-button>
+
+              <!-- Only show loading bar if needed -->
+              <template is="dom-if" if="[[_isInProgress(ui.*, currentAsset)]]">
+                <paper-progress indeterminate bottom-item class="progressBar"></paper-progress>
+              </template>
+            </app-toolbar>              
+          </app-header>
+
+          <!--
+          <img src="http://9.32.111.250:7001/maximo/oslc/os/plusbsr/_U1IvU1JfMTE3Nw--/doclinks/76"/>
+          -->
+        
+        <template is="dom-if" if="{{!isAssetSelected}}">
+            <div class="Aligner" style="color:#757575">
+              <div class="Aligner-item">
+                <h4>Select an inspection request to review and submit changes to that request.</h4> 
+              </div>           
+            </div>
+        </template>
+
+        <template is="dom-if" if="{{isAssetSelected}}">
+          <ul class="app-grid padded">          
+            <li class="item">
+              <paper-card id="card">              
+                <div class="card-content" id="container">
+                  <!-- show error text -->               
+                  <template is="dom-if" if="[[_hasError(ui.*, currentAsset)]]">
+                      <div style="color: #E53935">
+                        <!-- store transaction and SR id together, so we can id which one has errors-->
+                          [[_getErrorMessage(ui.*, currentAsset)]]
+                      </div>
+                  </template>  
+                  <iron-form id="formwrapper" on-iron-form-presubmit="presubmit">
+                    <form action="/foo" method="get" id="innerform">
+                      <template is="dom-repeat" items="{{fields}}">
+                          <!-- if this is an enumeration type -->
+                          <template is="dom-if" if="{{_isEnum(item)}}">
+                              <paper-dropdown-menu name="[[item.title]]" label="[[item.label]]" style="width:100%" readonly$="[[_isReadOnly(item, isRegulator)]]">
+                                  <paper-listbox id="[[item.title]]" slot="dropdown-content" selected="[[_getFormValue(item.title, formData.*)]]">
+                                      <!-- Repeat the items in the enum -->
+                                      <template is="dom-repeat" items="{{item.enum}}">
+                                          <paper-item>[[item]]</paper-item>                                          
+                                      </template>
+                                    </paper-listbox>
+                              </paper-dropdown-menu>
+                          </template>
+
+                          <!-- if this is a LONGALN subtype TODO use always-float-label="[[value]]"-->
+                          <template is="dom-if" if="{{_isLongAln(item)}}">
+                              <paper-textarea id="[[item.title]]" name="[[item.title]]" always-float-label="[[_getFormValue(item.title, formData.*)]]" value="{{_getFormValue(item.title, formData.*)}}" on-change="{{_setFormValue(e)}}" label="[[item.label]]" auto-validate char-counter="[[item.maxLength]]" maxlength="[[item.maxLength]]" readonly$="[[_isReadOnly(item, isRegulator)]]"></paper-textarea>
+                          </template>
+
+                          <!-- if this is a YORN type -->
+                          <template is="dom-if" if="{{_isYorn(item)}}">
+                              <paper-toggle-button id="[[item.title]]" name="[[item.title]]" readonly$="[[_isReadOnly(item, isRegulator)]]">[[item.label]]</paper-toggle-button>
+                          </template>
+
+                          <!-- if this is any other type -->
+                          <template is="dom-if" if="{{_isDefault(item)}}">
+                            <template is="dom-if" if="[[_isReadOnly(item, isRegulator)]]">
+                                <paper-input id="[[item.title]]" on-tap="_checkIfDate" value="{{_getFormValue(item.title, formData.*, item)}}"  name="[[item.title]]" label="[[item.label]]" auto-validate maxlength="[[item.maxLength]]" readonly/>
+                            </template>
+                            <template is="dom-if" if="[[!_isReadOnly(item, isRegulator)]]">
+                                <paper-input id="[[item.title]]" on-tap="_checkIfDate" value="{{_getFormValue(item.title, formData.*, item)}}" name="[[item.title]]" label="[[item.label]]" auto-validate char-counter="[[item.maxLength]]" maxlength="[[item.maxLength]]"/>
+                            </template>
+                            <!-- name is a required attribute in order for serializeForm to work -->
+                            
+                          </template>
+                      </template>
+                      <br/>
+                      <template is="dom-if" if="{{!isRegulator}}">
+                        <div class="horizontal end-justified layout">
+                            <paper-button on-click="submit">Submit</paper-button>
+                        </div>                
+                    </template>     
+                    </form>
+                  </iron-form> 
+                </div>          
+              </paper-card>
+            </li>
+
+            <div style="margin-top: 24px" class="layout horizontal">
+                <h2 style="color: #404040; margin-top: 0px; margin-right: 8px; margin-bottom: 0px">Attachments</h2>  
+                <div style="margin-bottom: 20px">
+                    <div class="upload-btn-wrapper" style="margin-top:-7px;">
+                        <paper-icon-button icon="note-add" style="color: #325c80;"></paper-icon-button>
+                        <input type="file" name="myfile" on-change="_imageUploadChanged"/>                    
+                      </div>
+                </div>      
+              </div>
+
+            <div id="carousel">
+                <template is="dom-repeat" items="[[attachments]]" id="attachmentsList">                   
+                  <template is="dom-if" if="{{_isImage(item)}}">
+                    <div class="slide" on-tap="_handleImageTap">
+                      <img class="scale-down" src="[[item.href]]?_lid=maxadmin&_lpwd=maxadmin&lean=1"/>
+                    </div>
+                  </template>
+                  <template is="dom-if" if="{{!_isImage(item)}}">
+                    <div class="slide">
+                      <div style="min-width: 100px" on-tap="_handleFileTap">
+                        [[item.describedBy.title]]
+                        <div class="layout center-justified horizontal">
+                            <iron-icon icon="editor:insert-drive-file" slot="prefix" style="color: #325c80;"></iron-icon>
+                        </div>
+                      </div>
+                    </div>
+                  </template>                        
+                </template>
+            </div>
+            
+            <div style="margin-top: 24px" class="layout horizontal">
+              <h2 style="color: #404040; margin-top: 0px; margin-right: 8px">History</h2>
+              <template is="dom-if" if="{{historyLoading}}">           
+                <paper-spinner-lite active class="orange"></paper-spinner-lite>
+              </template>               
+            </div>
+            <template is="dom-repeat" items="[[assetHistory]]" id="assetHistory">
+              <li class="item" style="margin-top: 8px">
+                <!-- need unique id per card to animate -->
+                  <paper-card id="{{_cardId(item)}}" class$="{{_isAnimated(item)}}">
+                    <div class="card-content" id="historyContainer">
+                      <div class="horizontal layout wrap" on-click="_toggleHistory">
+                        <div class="justify-start flex" style="color: #404040">
+                            <b>
+                            {{_getHistoryEventType(item)}}
+                            </b> 
+                        </div>
+
+                        <div class="flex" style="color: #404040">
+                            {{_getHistoryEventStatus(item)}}
+                        </div>  
+                  
+                        <div style="color: #404040">
+                          {{_getHistoryEventTimestamp(item)}}
+                        </div>
+                      </div>
+                      <iron-collapse id="{{_getHistoryEventIdWithoutHash(item)}}">                        
+                        <pre inner-h-t-m-l="[[_prettyJson(item)]]"></pre>
+                      </iron-collapse>
+                    </div>
+                  </paper-card>
+              </li>
+            </template>
+          </template>
+        </ul> 
+      </app-header-layout>
+    </app-drawer-layout>
+    
+    <app-datepicker-dialog with-backdrop id="datepicker" date="{{selectedDate}}" on-iron-overlay-closed="_handleOverlayClosed"></app-datepicker-dialog>
+
+    <!-- <paper-dialog id="dateDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+      <h2>{{selectedTextField.label}}</h2>
+      <app-datepicker view="vertical" date="{{selectedDate}}" input-date="{{selectedDate}}" auto-update-date="true" disable-days="[[disabledDaysDate]]"></app-datepicker>
+      <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button dialog-confirm autofocus on-tap="_updateDateField">Accept</paper-button>
+      </div>
+    </paper-dialog> -->
+
+    <paper-dialog id="imageDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+      <paper-dialog-scrollable>
+        <iron-image style="width:500px; height:500px;" sizing="contain" id="dialogImage" src="[[currentImageHref]]" loaded="{{currentImageLoaded}}"/>
+      </paper-dialog-scrollable>
+    </paper-dialog>
+
+    <paper-toast vertical-align="bottom" horizontal-align="right" id="toast" text="[[toastMsg]]">
+      <paper-button on-tap="_closeToast" style="color: orange;">Dismiss</paper-button>
+    </paper-toast> 
+
+    <web-socket id="ws"
+      auto
+      url="[[urls.websocket]]" 
+      last-response="{{response}}"
+      verbose>
+    </web-socket>
+
+    <iron-ajax
+      id="ajax"
+      content-type="application/json"
+      url=[[url]]
+      handle-as="json"
+      debounce-duration="300"></iron-ajax>
+
+  </template>
+
+  <script>
+
+    import schema from './schema'
+    import config from './config'
+    import slug from 'slug'
+    import moment from 'moment'
+
+    /**
+     * @customElement
+     * @polymer
+     */
+    class MaximoBcSrPotApp extends Polymer.Element {
+      static get is() { return 'maximo-bc-sr-pot-app'; }
+      static get properties() {
+        return {
+          fields: {
+            type: Array,
+            value: []
+          },
+          ui: {
+            type: Object,
+            value: {}
+          },
+          response: {
+            type: Object,
+            observer: '_handleResponse'
+          },
+          assetList: {
+            type: Array,
+            value: []
+          },
+          assetHistory: {
+            type: Array,
+            value: []
+          },
+          url: {
+            type: String,
+            value: ""
+          },
+          userRoute: {
+            type: String,
+            observer: "_handleUserRouteChange"
+          },
+          inProgressSubmissions:{
+            type: Array,
+            value: []
+          },
+          urls: {
+            type: Object
+          },
+          showErrorMessage: {
+            type: Boolean,
+            value: false
+          },
+          filterValue:{
+            type: String,
+            value: '',
+            observer: '_handleFilterValueChanged'
+          },
+          currentAsset: {
+            type: Object,
+            value: {}
+          },
+          isAssetSelected: {
+            type: Boolean,
+            value: false
+          },
+          toastMsg: {
+            type: String,
+            value: ''
+          },
+          isRegulator: {
+            type: Boolean,
+            value: false
+          },
+          //stores the label of the last selected text field so we can show it in the date modal
+          selectedTextField: {
+            type: String,
+            value: ''
+          },
+          selectedDate: {
+            type: String,
+            value: '',
+            observer: '_handleSelectedDateChanged'
+          },
+          disabledDaysDate:{
+            type: Array,
+            value: []
+          },
+          formData:{
+            type: Object,
+            value: {}
+          },
+          attachments: {
+            type: Array,
+            value: []
+          },
+          currentImageHref: {
+            type: String,
+            value: ""
+          },
+          appTitle: {
+            type: String,
+            value: ""
+          },
+          navTitle: {
+            type: String,
+            value: ""
+          },
+          participant: {
+            type: Object
+          },
+          participants: {
+            type: Array,
+            value: []
+          }
+        };
+      }
+
+      constructor(){
+        super();
+        var self = this;
+
+        this.appTitle = config.ui.appTitle
+        this.navTitle = config.ui.navTitle  
+
+        this.participant = config.participants[0]
+        this.participants = config.participants 
+        
+        this.urls = {
+          websocket: config.url.websocket
+        }
+
+        //get the schema then create the list of form fields
+        var schema = this.getJsonSchema().then(schema => {
+          this.generateFormFields(schema);
+        });
+      }
+
+      ready(){
+        super.ready()
+        
+        this._updateAssetList()
+        
+        //we check our list of in progress submissions every `checkInterval` seconds
+        const checkInterval = 2000;
+        window.setInterval(this._checkTrxStatus.bind(this), checkInterval)
+      }
+
+      _imageUploadChanged(e) {
+        const files = e.target.files
+        const file = files[0]
+
+        console.log(file)
+
+        var reader = new FileReader();  
+        var xhr = new XMLHttpRequest();
+
+        var self = this;
+
+        xhr.open("POST", this.currentAsset.href + config.url.attachments);
+
+        //slug representation for the filename. Required by doclinks.
+        xhr.setRequestHeader('slug',slug(files[0].name))
+        xhr.setRequestHeader('x-document-meta','Attachments')
+        xhr.setRequestHeader('Content-Type',file.type)
+
+        //when we finished posting the data
+        xhr.onload = function (e) {
+            console.log(xhr.statusText);
+
+            //reload the UI
+            self.$.ajax.method = 'GET'
+            self.$.ajax.headers = config.doclinks.headers
+            self.url = self.currentAsset.href + config.url.attachments
+
+            self.$.ajax.generateRequest().completes.then(res => {
+              console.log(res.response)
+              self.attachments = res.response.member
+            })
+        };
+
+        //send the file
+        xhr.send(new Blob([file]))        
+      }
+
+      _prettyJson(json) {
+        return JSON.stringify(json, undefined, 2);
+    }
+
+      _isFirst(item){
+        return item[config.history.eventProp][config.history.eventType] === config.history.createdEvent
+      }
+
+      _updateAssetList(){        
+        this.$.ajax.method = 'GET'
+        this.$.ajax.headers = config.headers
+        this.url = config.urlFn.getAssets(this.participant.route)
+        this.set('ui.srReloading',true)
+        this.$.ajax.generateRequest().completes.then(({response}) => {
+
+          //loop through the response and create the UI specific object
+          for(var i = 0; i < response.length; i++){
+            this.set('ui.'+ response[i][config.uniqueId], {
+              errorMessage: '',
+              inProgress: false,
+              hasError: false
+            }) 
+          }
+
+          this.assetList = response
+          this.set('ui.srReloading',false)
+        })        
+      }
+
+      //handles for the first input if the date is today's date.
+      _handleOverlayClosed(e){
+        const field = this.shadowRoot.querySelector(`#${this.selectedTextField.title}`)
+        console.log(field.value)
+        if(e.detail.confirmed){
+          this._handleSelectedDateChanged()
+        }
+      }
+
+      //Updates the date field to be the one selected on the calendar
+      _handleSelectedDateChanged(){
+        const field = this.selectedTextField
+
+        console.log(field)
+        console.log(this.selectedDate)
+
+        this.set('formData.'+field.title, this.selectedDate)
+      }
+
+      _closeToast(){
+        this.$.toast.toggle()
+      }
+
+      _toggleHistory(e){
+        console.log(e)
+        const item = e.model.get('item')
+        const idWithoutHash = this._getHistoryEventIdWithoutHash(item)
+        //const id = item[config.history.eventProp][config.history.eventId]
+        const node = this.shadowRoot.querySelector('#' + idWithoutHash)
+        const div = this.shadowRoot.querySelector('#' + idWithoutHash + " > div")
+
+        node.toggle()      
+      }
+
+      _getJsonBefore(item){
+        return "jsonbefore_" + item[config.history.eventProp][config.history.eventId].replace('#','')
+      }
+
+      _getJsonAfter(item){
+        return "jsonafter_" + item[config.history.eventProp][config.history.eventId].replace('#','')
+      }
+
+      _getHistoryEventType(item){
+        return item[config.history.eventProp][config.history.eventType] 
+      }
+
+      _getHistoryEventStatus(item){
+        return item[config.history.eventProp]["newState"]["status"] 
+      }
+
+      _getHistoryEventTimestamp(item){
+        const date = new Date(item[config.history.eventProp].timestamp)
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
+      }
+
+      /**
+       * We need to prepend event because events are numeric and they are invalid css selectors
+       */
+      _getHistoryEventIdWithoutHash(item){
+        return "event_" + item[config.history.eventProp][config.history.eventId].replace('#','');
+      }
+
+      _getHistoryEventId(item){
+        return item[config.history.eventProp][config.history.eventId].substring(0, 10) + "..."
+      }
+
+      _getSideNavItem(item){
+        return item[config.uniqueId] + " - " + item.status
+      }
+
+      _isAnimated(item){
+        // if(item._animate){
+        //   return 'slide-up-fade-in'
+        // }
+
+        return 'slide-up-fade-in'
+      }
+
+      _cardId(item){
+        return "card_" + item[config.history.eventProp][config.history.eventId].replace('#','');
+      }
+
+      _getAssetType(){
+        return config.history.assetType
+      }
+
+      _getFormValue(title, formData, item){
+        if(item && item.subType === "DATETIME"){
+          //console.log(this.get('formData.' + title))
+          //try to make a date
+          const d = new Date(this.get('formData.' + title))
+          if(isNaN(d.getTime())){
+            return null
+          }else{
+            return d.toLocaleDateString('en-US',{timeZone: "UTC"})
+          }
+          
+        }
+        //console.log(title)
+        //console.log(formData)
+        return this.get('formData.' + title)
+      }
+
+      _getErrorMessage(ui, currentAsset){
+        return this.get('ui.'+currentAsset[config.uniqueId]+'.errorMessage')
+      }
+
+      _hasError(ui, currentAsset){
+        return this.get('ui.'+currentAsset[config.uniqueId]+'.hasError')
+      }
+
+      _hasErrorNotInProgress(ui, currentAsset){
+        return this.get('ui.'+currentAsset[config.uniqueId]+'.hasError') && !this.get('ui.'+currentAsset[config.uniqueId]+'.inProgress')
+      }
+
+      //check if a particular item has a ui in progress status
+      _isInProgress(ui, item){
+        if(item._id === "SR-MB0803181"){
+          console.log(this.get('ui.'+item[config.uniqueId]+'.inProgress'))
+        }
+        return this.get('ui.'+item[config.uniqueId]+'.inProgress')
+      }
+
+      //something is read only if the schema indicates it is or if it is the regulator account
+      _isReadOnly(field, isRegulator){
+        return field.readonly || isRegulator
+      }
+
+      _handleFilterValueChanged(){
+        this.$.srMenu.render()
+      }
+
+      _checkIfDate(e){
+        const field = e.model.get('item')
+        //if this is a datetime field, we should open the datetime dialog
+        if(field.subType === 'DATETIME' && !this._isReadOnly(field, this.isRegulator)){
+          this.selectedTextField = field
+          const dateString = this.formData[field.title]
+
+          this.$.datepicker.open()
+        }
+      }
+
+      _checkTrxStatus(){
+        //only do something if inProgressSubmissions is not empty
+        if(this.inProgressSubmissions.length === 0){
+          return
+        }
+
+        //we assume that the transactions will complete in the order that they were made
+        const currentTrx = this.inProgressSubmissions[0].trxId
+        const uniqueid = this.inProgressSubmissions[0][config.uniqueId]
+
+        console.log(currentTrx)
+
+        var self = this
+
+        //if the transaction is still in progress
+        var isInProgress = true;
+
+        //do get call
+        this.url = config.urlFn.getLog() + currentTrx
+        this.$.ajax.method = 'GET'
+        this.$.ajax.generateRequest().completes.then(({response}) => {
+          console.log(response)
+          //iterate through and figure out if success or failure
+          for(let i = 0; i < response.length; i++){
+            if(response[i].msg.includes("SUCCESS")){
+              //TODO display error message per SR
+              this.set('ui.'+uniqueid+'.hasError', false)        
+              //this transaction was a success, remove from queue and call success function
+              self.shift('inProgressSubmissions')
+              isInProgress = false
+              break
+            }else if(response[i].reason){
+              //if there is a reason key, then it was an error. Do error function
+              //TODO display error message per SR
+              console.log(response[i].reason)
+              this.set('ui.'+uniqueid+'.hasError', true)
+              this.set('ui.'+uniqueid+'.errorMessage', response[i].reason) 
+              self.shift('inProgressSubmissions')
+              isInProgress = false
+              break
+            }
+          }
+
+          //if this transaction is no longer in progress, update UI
+          if(!isInProgress){
+            this.set('ui.'+uniqueid+'.inProgress', false)
+          }        
+        })
+      }
+
+      _handleUserRouteChange(e){
+        var self = this
+
+        this.participant = this.participants.find(item => item.route === e)
+
+        //get all assets again
+        this._updateAssetList();
+
+        this.assetHistory = []
+        this.selectedSR = null;
+        this.$.srSelector.select(null)
+        this.attachments = [] //clear attachments
+
+        //clear all fields on user type change
+        this.set('formData', {})
+
+        this.$.srMenu.render()
+      }
+
+      /**
+       * Filters available SRs by user type
+       */
+      _filter(item){
+        var filterCondition = true; 
+        var userCondition = true;
+        this.isRegulator = false;
+        
+        //apply filter
+        if(this.filterValue){
+          if(!item.status){
+            filterCondition = false
+          }else{
+            filterCondition = item.status.includes(this.filterValue.toUpperCase()) || item.ticketid.toUpperCase().includes(this.filterValue.toUpperCase())
+          }          
+        }
+
+        //the default case is to just show all SRs
+        return filterCondition// && userCondition
+      }
+
+      /**
+       * We handle selection either based on click (e.model.get) or directly passing e as the SR (sr=e)
+       */
+      _handleSRSelected(e, response){
+        var originalAsset = this.currentAsset;
+
+        if(e.model){
+          this.currentAsset = e.model.get('item')
+        }else{
+          this.currentAsset = e
+        }
+        
+        this.isAssetSelected = true
+        var self = this;
+        this.attachments = [] //clear attachments
+        this.currentImageHref = ''
+
+        console.log(this.currentAsset)
+        this.$.ajax.method = 'GET'
+        this.$.ajax.headers = config.doclinks.headers
+        this.url = this.currentAsset.href + config.url.attachments
+
+        this.$.ajax.generateRequest().completes.then(res => {
+          console.log(res.response)
+          self.attachments = res.response.member
+        })
+
+        //this.$.ajax.body = payload
+
+        //erase fields on formdata on selection
+        self.set('formData', {} )
+
+        //field contains the schema information for a given field
+        this.fields.forEach(function(field){
+          
+          //if the field is an enum, we must choose the proper selection
+          if(field.enum){
+            self.set('formData.' + field.title, field.enum.indexOf(self.currentAsset[field.title]))
+          }else {
+            self.set('formData.' + field.title, self.currentAsset[field.title])
+          }
+        })
+
+        //load the asset history. We pass the original and current asset since we need to compare if they match
+        this._getAssetHistory(response, originalAsset)
+
+        //hide drawer
+        if (!this.$.drawer.persistent){
+          this.$.drawer.close();
+        } 
+      }
+
+      _getAssetHistory(wsResponse, originalAsset){
+        //clear asset history so it does not persist between selections if the asset is not the same
+        if(this.currentAsset[config.uniqueId] !== originalAsset[config.uniqueId]){
+          this.assetHistory = []
+        }        
+
+        this.$.ajax.method = 'POST'
+        this.$.ajax.headers = config.headers
+        this.url = config.urlFn.getAssetHistory(this.participant.route)
+
+        var payload = {
+          query: "readSRHistory",
+          parameters: {
+            "_id_time_start_incl": this.currentAsset[config.uniqueId] + "~",
+            "_id_time_end_excl": this.currentAsset[config.uniqueId] + "~ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"    
+          }
+        }
+
+        this.$.ajax.body = payload
+        this.historyLoading = true
+        var self = this
+
+        this.$.ajax.generateRequest().completes.then(({response}) => {
+          //when we get the response, we should check to see if its relevant to the asset we are looking at
+          console.log(response)
+          console.log(this.currentAsset)
+          if(response[0][config.history.eventProp]["newState"][config.uniqueId] == this.currentAsset[config.uniqueId]){
+
+            response.reverse()
+
+            //first we check to see if this was a response to a websocket
+            if(wsResponse.$class){
+              //if it is, we take the top of the reversed response
+
+              //we set a private boolean ui property to animate incoming transactions
+              response[0]._animate = true
+              this.unshift('assetHistory',response[0])
+
+              const repeat = self.shadowRoot.querySelector('#assetHistory')
+
+              repeat.addEventListener("dom-change", function handledom(event){
+                console.log(event);                
+                const newCard = self.shadowRoot.querySelector('#'+self._cardId(response[0]))
+                const collapse = self.shadowRoot.querySelector('#'+self._getHistoryEventIdWithoutHash(response[0]))
+
+                if(collapse.opened){
+                  collapse.opened = false
+                }
+                
+                newCard.animate([
+                    {transform:'translateY(40px)', opacity: 0, transformOrigin:'50% 50%'},
+                    {transform:'translateY(0)', opacity: 1, transformOrigin:'50% 50%'},
+                  ],
+                  {
+                    fill: 'forwards',
+                    duration: 1000,
+                    ease: 'ease-out'
+                  }
+                );                
+
+                //we need to remove so the animation doesn't keep happening
+                repeat.removeEventListener("dom-change", handledom)
+              });
+
+              //we want to animate the one that just came in
+              //self._animate(response[0])
+            } else{
+              //else replace the whole thing
+              self.assetHistory = response
+            }            
+          }
+          
+          self.historyLoading = false
+        })
+               
+      }
+
+      _handleResponse(){
+        console.log(this.response)
+
+        //if this is a create, we need to dynamically add an SR to the list of srs
+        //TODO change this to created
+        if(this.response.data.payload.$class === 'org.poc.maximo.SRUpdatedEvent'){
+          //when we update an SR, we need to change the SR's value
+          for(var i = 0; i < this.assetList.length; i++){
+            var sr = this.assetList[i]
+
+            if(sr[config.uniqueId] === this.response.data.payload.newState[config.uniqueId]){
+              this.set('assetList.' + i, this.response.data.payload.newState)
+              //we also need to clear any UI messages and state, since incoming updates are always valid
+              this.set('ui.'+ this.assetList[i][config.uniqueId] +'.hasError', false)
+
+              //update the form if the ticketid that we are currently viewing is the sr that changed
+              if(this.formData[config.uniqueId] === sr[config.uniqueId]){
+
+                //we send in response data only when it is from a websocket response
+                this._handleSRSelected(this.assetList[i], this.response)
+              }     
+              
+              //display notification
+              this.toastMsg = 'SR ' + sr[config.uniqueId] + ' was updated.'
+              this.$.toast.open()
+              break
+            }
+          }          
+        }else if(this.response.data.$class === 'org.poc.maximo.SRCreatedEvent'){
+          //when we create an SR, we need to add it to the list
+          this.push('assetList', this.response.data.payload.newState)
+
+          //we also need to add the ticketid to the UI object
+          this.set('ui.'+this.response.data.payload.newState[config.uniqueId], {
+            errorMessage: '',
+            inProgress: false,
+            hasError: false
+          })
+
+          this.toastMsg = 'SR ' + this.response.payload.newState[config.uniqueId] + ' was created.'
+          this.$.toast.open()
+        }
+      }
+
+      presubmit(e){
+        e.preventDefault();
+
+        //need to use query selector because form is originally hidden
+        const formData = this.shadowRoot.querySelector('#formwrapper').serializeForm()
+
+        //iterate through formdata and make sure the date types are sent as ISO 8601
+
+
+        var self = this
+
+        //TODO need to persist data when changing SRs while a submission is still in progress
+        //loop through SR list and find the appropriate SR, then set the values
+        for(var i = 0; i < this.assetList.length; i++){
+          if(this.assetList[i][config.uniqueId] === formData[config.uniqueId]){
+            this.set('assetList.'+i, {
+              '$class': 'org.poc.maximo.SR',
+              ...formData
+            })
+            break;
+          }
+        }
+
+        //TODO enable user to reset data by getting the SR via the endpoint
+      
+        //send post to submit
+        this.url = config.urlFn.updateAsset(this.participant.route)
+        this.$.ajax.headers = config.headers
+
+        //udpate dates formdata
+        for(let prop in schema.properties){
+          if(schema.properties.hasOwnProperty(prop)){
+
+            let propObj = schema.properties[prop]
+
+            if(propObj.subType === "DATETIME"){
+              //check our form data to see if any matches
+              if(formData[prop]){
+                //this entry is a date, we need to convert it
+                formData[prop] = moment(formData[prop], 'MM/DD/YYYY').toISOString()
+              }
+            }
+            
+          }
+        }
+
+        var payload = {
+          '$class': 'org.poc.maximo.UpdateSR',
+          'newState': {
+            '$class': 'org.poc.maximo.PLUSBSR',
+            "ticketclass": "SR",
+            ...formData
+          }
+        }
+
+        this.$.ajax.body = payload
+        this.$.ajax.method = 'POST'
+
+        //set in progress for this ticket
+        this.set('ui.'+formData[config.uniqueId]+'.inProgress', true) 
+        
+        this.$.ajax.generateRequest().completes.then(res => {
+          //begin tracking this transaction  
+          const trxId = res.response.message.correlationId
+          //store all in progress submissions along with their ticketids
+          self.push('inProgressSubmissions', {_id: formData[config.uniqueId], trxId})
+        })
+      }
+
+      submit(){
+        //this is dynamically created, so we have to query select for it
+        this.shadowRoot.querySelector('#formwrapper').submit()
+      }
+
+      generateFormFields(schema){
+        for(var key in schema.properties){
+          if(schema.properties.hasOwnProperty(key)){
+            //for now, ignore properties which is nested
+            if(schema.properties[key].type === 'object'){
+              continue
+            }
+
+            if(schema.properties[key].hidden){
+              continue
+            }
+
+            const field = schema.properties[key]        
+            this.push('fields',field)
+            this.formData[field.title] = null          
+          }
+        }
+      }
+
+      _isEnum(schemaItem){
+        return schemaItem.enum !== null && schemaItem.enum !== undefined
+      }
+
+      _isDefault(schemaItem){
+        return !this._isEnum(schemaItem) && !this._isLongAln(schemaItem) && !this._isYorn(schemaItem)
+      }
+
+      _isLongAln(schemaItem){
+        return schemaItem.subType === "LONGALN"
+      }
+
+      _isYorn(schemaItem){
+        return schemaItem.type === "boolean"
+      }
+
+      //JSON schema from maximo. readonly is a workaround, but should be specified in schema eventually somehow.
+      getJsonSchema(){
+        return Promise.resolve(schema)
+      }
+
+      _handleImageTap(e){
+        console.log(e.model.item)
+        //use the model item to get the href
+        this.currentImageHref = e.model.item.href + "?" + config.auth
+        //this.dialogImage.loaded
+        var self = this
+        this.$.imageDialog.toggle()
+      }
+
+      _isImage(item){
+        var title = item.describedBy.title.toUpperCase()
+        var format = item.describedBy.format
+        if(title.includes('JPG')||
+        title.includes('PNG') ||
+        title.includes('GIF')||
+        title.includes('BMP') || format.label.includes("image")){
+          return true
+        }
+        return false
+      }
+
+      _handleFileTap(e){        
+        var item = e.model.item
+        console.log(item)
+        window.location = item.href;
+      }
+    }
+
+    window.customElements.define(MaximoBcSrPotApp.is, MaximoBcSrPotApp);
+  </script>
+</dom-module>

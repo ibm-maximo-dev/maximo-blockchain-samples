@@ -1,0 +1,208 @@
+<!--
+/*
+ * Copyright (c) 2018-present, IBM CORP.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+  
+  Initial Contribution: Alex Nguyen <nguyenal@us.ibm.com>
+-->
+
+<link rel="import" href="../../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/app-datepicker/app-datepicker.html">
+<link rel="import" href="../../bower_components/app-datepicker/app-datepicker-dialog.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-collapse-item/paper-collapse-item.html">
+<link rel="import" href="../../bower_components/paper-collapse-item/paper-collapse-group.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/moment-element/moment-element.html">
+
+
+<dom-module id="maximo-bc-gl-app">
+  <template>
+    <style style include="iron-flex iron-flex-alignment">
+      :host {
+        display: block;
+      }
+      .collapseContainer {
+        margin-top: "24px"
+      }
+      .headerContainer {
+        display: flex;
+        justify-content: space-between;
+      }
+      hr {
+        border: 0; 
+        height: 1px; 
+        background-image: -webkit-linear-gradient(left, #f0f0f0, #d1d1d1, #f0f0f0);
+        background-image: -moz-linear-gradient(left, #f0f0f0, #d1d1d1, #f0f0f0);
+        background-image: -ms-linear-gradient(left, #f0f0f0, #d1d1d1, #f0f0f0);
+        background-image: -o-linear-gradient(left, #f0f0f0, #d1d1d1, #f0f0f0); 
+      }
+    </style>
+    <h2>General Ledger Query</h2>
+
+    <paper-input id="startDate" on-tap="_displayDatePicker" value="{{startDate}}" name="startDate" label="Start Date"></paper-input>   
+    <paper-input id="endDate" on-tap="_displayDatePicker" value="{{endDate}}" name="endDate" label="End Date"></paper-input>
+    <paper-input id="type" value="{{type}}" name="type" label="Type"></paper-input>
+
+    <div class="horizontal end-justified layout">
+      <paper-button on-tap="_getTransactions">Get Transactions</paper-button>
+    </div>
+
+    <dom-repeat items="{{transactions}}">
+      <template>
+        <paper-collapse-item>
+          <div slot="header" style="width: 100%">
+            <div id="headerTop" class="headerContainer">
+              <div>
+                <strong>Issue Type</strong>: [[item.issuetype]]
+              </div>
+              <div style="padding-right: 18px"> 
+                <strong>Line Cost</strong>: [[item.linecost]] 
+              </div>
+            </div>
+            <div id="headerBottom" class="headerContainer">
+              <div> 
+                  <strong>Transaction Date</strong>: [[item.transdate]]
+              </div>
+              <div style="padding-right: 18px">
+                  <strong>Quantity</strong>: [[item.quantity]]
+              </div>
+            </div>             
+          </div>
+          <pre inner-h-t-m-l="[[_prettyJson(item)]]"></pre>
+        </paper-collapse-item>
+        <hr>
+      </template>
+    </dom-repeat>
+
+    <app-datepicker-dialog with-backdrop id="datepicker" date="{{selectedDate}}" on-iron-overlay-closed="_handleOverlayClosed"></app-datepicker-dialog>
+
+    <iron-ajax
+      id="ajax"
+      content-type="application/json"
+      url=[[url]]
+      handle-as="json"
+      debounce-duration="300"></iron-ajax>
+
+      <moment-element id="moment" inputFormat="YYYY-MM-DD"></moment-element>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class MaximoBcGlApp extends Polymer.Element {
+      static get is() { return 'maximo-bc-gl-app'; }
+      static get properties() {
+        return {
+          startDate: {
+            type: String,
+            value: ""
+          },
+          endDate: {
+            type: String,
+            value: ""
+          },
+          type: {
+            type: String,
+            value: ""
+          },
+          selectedField: {
+            type: String,
+            value: ""
+          },
+          selectedDate: {
+            type: String,
+            value: "",
+            observer: "_handleSelectedDateChanged"
+          },
+          url: {
+            type: String,
+            value: ""
+          },
+          transactions: {
+            type: Array,
+            value: function() {
+              return []
+            }
+          },
+          closingReason: {
+            Type: Object,
+            value: {}
+          }
+        };
+      }
+      _displayDatePicker(e){
+        this.selectedField = e.target.id   
+        this.$.datepicker.open();  
+      }
+
+      _handleOverlayClosed(e){
+        if(e.detail.confirmed){
+          this._handleSelectedDateChanged()
+        }
+      }
+
+      //Updates the date field to be the one selected on the calendar
+      _handleSelectedDateChanged(){
+        this.$.moment.datetime = this.selectedDate
+        this.$.moment.update()
+        this.$.moment.outputFormat = "YYYY-MM-DDTHH:mm:ssZ"
+        let output = this.$.moment.output
+        this.set(this.selectedField, output)
+      }
+
+      _getTransactions(){
+        const pass = "API-KEY"
+        const root = 'https://alphacluster.us-south.containers.mybluemix.net/api/v1'
+        const org = 'ixe4p'
+        const appname = 'Maximo'
+        const asset = 'PLUSBMXGLTXN'
+        const region = 'us'
+        let pass = "API-KEY"
+
+        this.$.ajax.method = 'POST'
+        let header = `Basic ${btoa("use-token-auth:"+ pass)}`
+
+        this.$.ajax.headers = {
+          Authorization: header
+        }
+
+        let url = `${root}/${org}/q/${appname}/${asset}${region}/executequery`
+        console.log(url)
+
+        this.$.ajax.body = {
+          query: "SELECT org.poc.maximo.PLUSBMXGLTXN WHERE ((transdate >= _$transdate_start_incl) AND (transdate < _$transdate_end_excl) AND  (issuetype == _$type) OR (transtype == _$type) )",
+          parameters: {
+            transdate_start_incl: this.startDate,
+            transdate_end_excl: this.endDate,
+            type: this.type
+          }
+        }
+
+        var self = this
+
+        this.$.ajax.generateRequest().completes.then(res => {
+          self.transactions = res.response
+        }).catch(err => {
+          console.log(err)
+        })
+      }
+      _prettyJson(json) {
+        return JSON.stringify(json, undefined, 2);
+      } 
+    }
+    window.customElements.define(MaximoBcGlApp.is, MaximoBcGlApp);
+  </script>
+</dom-module>

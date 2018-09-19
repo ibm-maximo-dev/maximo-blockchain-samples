@@ -1,0 +1,70 @@
+<!doctype html>
+<!--
+  Copyright IBM Corporation 2017, 2018
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  
+  Initial Contribution: Alex Nguyen <nguyenal@us.ibm.com>
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>maximo-bc-gl-app test</title>
+
+    <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../../src/maximo-bc-gl-app/maximo-bc-gl-app.html">
+  </head>
+  <body>
+
+    <test-fixture id="BasicTestFixture">
+      <template>
+        <maximo-bc-gl-app></maximo-bc-gl-app>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="ChangedPropertyTestFixture">
+      <template>
+        <maximo-bc-gl-app prop1="new-prop1"></maximo-bc-gl-app>
+      </template>
+    </test-fixture>
+
+    <script>
+      suite('maximo-bc-gl-app', function() {
+
+        test('instantiating the element with default properties works', function() {
+          var element = fixture('BasicTestFixture');
+          assert.equal(element.prop1, 'maximo-bc-gl-app');
+          var elementShadowRoot = element.shadowRoot;
+          var elementHeader = elementShadowRoot.querySelector('h2');
+          assert.equal(elementHeader.innerHTML, 'Hello maximo-bc-gl-app!');
+        });
+
+        test('setting a property on the element works', function() {
+          // Create a test fixture
+          var element = fixture('ChangedPropertyTestFixture');
+          assert.equal(element.prop1, 'new-prop1');
+          var elementShadowRoot = element.shadowRoot;
+          var elementHeader = elementShadowRoot.querySelector('h2');
+          assert.equal(elementHeader.innerHTML, 'Hello new-prop1!');
+        });
+
+      });
+    </script>
+
+
+  </body>
+</html>
