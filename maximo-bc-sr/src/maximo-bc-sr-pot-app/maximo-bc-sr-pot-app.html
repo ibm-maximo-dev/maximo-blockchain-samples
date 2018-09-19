@@ -644,7 +644,7 @@
         xhr.open("POST", this.currentAsset.href + config.url.attachments);
 
         //slug representation for the filename. Required by doclinks.
-        xhr.setRequestHeader('slug',slug(files[0].name))
+        xhr.setRequestHeader('slug',this._slug(files[0].name))
         xhr.setRequestHeader('x-document-meta','Attachments')
         xhr.setRequestHeader('Content-Type',file.type)
 
@@ -667,9 +667,17 @@
         xhr.send(new Blob([file]))        
       }
 
+      _slug(text){
+        return text.toString().toLowerCase().trim()
+          .replace(/\s+/g, '-')           // Replace spaces with -
+          .replace(/&/g, '-and-')         // Replace & with 'and'
+          .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+          .replace(/\-\-+/g, '-');        // Replace multiple - with single -
+      }
+
       _prettyJson(json) {
         return JSON.stringify(json, undefined, 2);
-    }
+      }
 
       _isFirst(item){
         return item[config.history.eventProp][config.history.eventType] === config.history.createdEvent
